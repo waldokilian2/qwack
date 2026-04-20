@@ -1,30 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
-PLUGIN_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+# Only check current working directory for sentry file
 SENTRY_FILE=""
 
-# Try multiple sentry file locations
-# 1. User's home memory location
-if [[ -f "$HOME/.claude/projects/$(basename "$HOME")/memory/qwack-sentry.json" ]]; then
-    SENTRY_FILE="$HOME/.claude/projects/$(basename "$HOME")/memory/qwack-sentry.json"
-fi
-
-# 2. Plugin root parent directory (where the plugin is installed)
-if [[ -z "$SENTRY_FILE" && -f "$PLUGIN_ROOT/../.claude/qwack-sentry.json" ]]; then
-    SENTRY_FILE="$(cd "$PLUGIN_ROOT/.." && pwd)/.claude/qwack-sentry.json"
-fi
-
-# 3. Search upward from plugin root
-if [[ -z "$SENTRY_FILE" ]]; then
-    PROJECT_ROOT="${PLUGIN_ROOT}"
-    while [[ "$PROJECT_ROOT" != "/" && -z "$SENTRY_FILE" ]]; do
-        if [[ -f "$PROJECT_ROOT/.claude/qwack-sentry.json" ]]; then
-            SENTRY_FILE="$PROJECT_ROOT/.claude/qwack-sentry.json"
-        fi
-        PROJECT_ROOT="$(dirname "$PROJECT_ROOT")"
-    done
+if [[ -f ".claude/qwack-sentry.json" ]]; then
+    SENTRY_FILE="$(pwd)/.claude/qwack-sentry.json"
 fi
 
 # Check if sentry mode is enabled
