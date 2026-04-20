@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
+PLUGIN_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+SENTRY_FILE="$HOME/.claude/projects/$(basename "$HOME")/memory/qwack-sentry.json"
+
+# Alternative sentry file location (current project)
+if [[ ! -f "$SENTRY_FILE" ]]; then
+    PROJECT_ROOT="${PLUGIN_ROOT}"
+    while [[ "$PROJECT_ROOT" != "/" && ! -f "$PROJECT_ROOT/.claude/qwack-sentry.json" ]]; do
+        PROJECT_ROOT="$(dirname "$PROJECT_ROOT")"
+    done
+    if [[ -f "$PROJECT_ROOT/.claude/qwack-sentry.json" ]]; then
+        SENTRY_FILE="$PROJECT_ROOT/.claude/qwack-sentry.json"
+    fi
+fi
+
+# Check if sentry mode is enabled
+if [[ ! -f "$SENTRY_FILE" ]]; then
+    # No sentry file - exit silently
+    cat <<'EOF'
+{
+  "additional_context": ""
+}
+EOF
+    exit 0
+fi
+
+# Read enabled state
+ENABLED=$(jq -r '.enabled // false' "$SENTRY_FILE" 2>/dev/null || echo "false")
+
+if [[ "$ENABLED" != "true" ]]; then
+    # Sentry disabled - exit silently
+    cat <<'EOF'
+{
+  "additional_context": ""
+}
+EOF
+    exit 0
+fi
+
+# Sentry is enabled - inject the evaluation prompt
+cat <<EOF
+{
+  "additional_context": "<system-reminder>\\n\\n**QWACK SENTRY ACTIVE** 🦆\\n\\nYou are qwack's prompt sentry. Before processing the user's request, evaluate their prompt against these criteria:\\n\\n1. **Clarity**: Is the goal clear and specific?\\n2. **Context**: Are file paths, error messages, or relevant details provided?\\n3. **Completeness**: Does the prompt have what's needed to take action?\\n4. **Structure**: Is it well-organized and easy to understand?\\n\\nSCORING (1-10):\\n- 9-10: Excellent - clear, complete, with context\\n- 7-8: Good - mostly clear but could be improved\\n- 5-6: Fair - vague or missing some context\\n- 1-4: Poor - unclear, no context, or incomplete\\n\\n**IF SCORE IS 7 OR ABOVE:** Continue normally (no feedback needed).\\n\\n**IF SCORE IS BELOW 7:** Provide feedback before proceeding:\\n\\n---\\n**QUACK!** 🦆 Hold your feathers! That prompt needs some work.\\n\\n**Score:** X/10\\n\\n**What's quacking wrong:**\\n- [specific issues]\\n\\n**Try this instead:**\\n[Better prompt version]\\n\\nYou'll get better results with this approach. Now give it another try! *waddle waddle*\\n---\\n\\nAfter providing feedback, still proceed with their original request.\\n\\nPATTERN DETECTION: If this seems like a repetitive workflow pattern, add: \\\"**P.S.** I've noticed you've been doing [X] a lot. Ever thought about making a skill for that? Just a quack-suggestion! 🦆\\\"\\n\\nSkip evaluation if the prompt contains '/qwack-off'.\\n</system-reminder>"
+}
+EOF
+
+exit 0
