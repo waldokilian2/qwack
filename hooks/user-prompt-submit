@@ -4,7 +4,10 @@ set -euo pipefail
 # Only check current working directory for sentry file
 SENTRY_FILE=""
 
-if [[ -f ".claude/qwack-sentry.json" ]]; then
+# Use CLAUDE_PROJECT_DIR if available (set by Claude Code for hooks)
+if [[ -n "${CLAUDE_PROJECT_DIR:-}" && -f "$CLAUDE_PROJECT_DIR/.claude/qwack-sentry.json" ]]; then
+    SENTRY_FILE="$CLAUDE_PROJECT_DIR/.claude/qwack-sentry.json"
+elif [[ -f ".claude/qwack-sentry.json" ]]; then
     SENTRY_FILE="$(pwd)/.claude/qwack-sentry.json"
 fi
 
