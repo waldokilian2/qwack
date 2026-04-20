@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "'${CLAUDE_PLUGIN_ROOT}/hooks/run-hook.cmd' user-prompt-submit",
+            "command": "${CLAUDE_PLUGIN_ROOT}\\hooks\\run-hook.cmd user-prompt-submit",
             "async": false
           }
         ]
