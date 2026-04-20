@@ -1,0 +1,12 @@
+{
+  "name": "qwack",
+  "version": "0.1.0",
+  "description": "A sassy duck persona that improves AI-human collaboration through prompt evaluation, AI workflow planning, and skill explanations",
+  "author": {
+    "name": "Waldo"
+  },
+  "homepage": "https://github.com/waldo/qwack",
+  "repository": "https://github.com/waldo/qwack",
+  "license": "MIT",
+  "keywords": ["prompting", "skills", "productivity", "duck", "workflow"]
+}
