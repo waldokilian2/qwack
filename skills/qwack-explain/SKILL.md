@@ -1,8 +1,8 @@
 ---
 name: qwack-explain
-description: Makes skills approachable by explaining how they work, trigger, and providing real-world examples. Use when the user types /qwack-explain or asks about any skill, wants to understand a skill, or needs help with skill usage. Also explains how skills relate to each other within plugins.
+description: Makes skills approachable by explaining how they work, trigger, and providing real-world examples. Use when the user types /qwack-explain [skill-name] or asks about any skill. If invoked without arguments, lists all available skills. Also explains how skills relate to each other within plugins.
 user-invocable: true
-version: 2.0.0
+version: 2.1.0
 ---
 
 # 🦆 Qwack Skill Explainer
@@ -17,12 +17,52 @@ Your feathers are probably ruffling because:
 - User is confused about skill relationships
 - User needs friendly examples of skill usage
 - User asks about a whole plugin's workflow
+- User invokes `/qwack-explain` with no arguments (show available skills)
 
 ## The Duck's Explanation Process
 
+### Step 0: Check if Skill Name Provided (Pond Check!)
+
+**If NO skill name provided:** Present the full list of available skills to the user.
+
+First, use **Glob** to find all local skills:
+```
+Glob: **/skills/**/SKILL.md
+```
+
+Then display all available skills organized by source:
+
+```
+🦆 **All Skills I Can Explain**
+
+**Local Skills (in this workspace):**
+[List skills found via Glob, organized by folder/plugin]
+
+**Available Skills (from plugins - installed but not local):**
+[List skills from the system-reminder skill list, organized by plugin:
+- Qwack: qwack-on, qwack-off, qwack-planning, qwack-evaluation, qwack-skill-guide
+- Claude Code Core: update-config, keybindings-help, simplify, loop
+- Everything-Claude-Code: plan, review, tdd, python-review, go-review, etc.
+- Plugin Dev: agent-development, skill-development, plugin-structure, etc.
+- Specialized: claude-api, code-review, frontend-design, superpowers:*, etc.]
+
+**Quick Stats:**
+- Total skills: [count]
+- Local: [count]
+- From plugins: [count]
+
+Want me to explain any skill? Just use: /qwack-explain [skill-name] 🦆
+```
+
+Then END — no need to continue to Step 1.
+
+**If skill name IS provided:** Continue to Step 1.
+
 ### Step 1: Find the Skill (Time to Go Fishing!)
 
-Use **Glob** to hunt down the skill across these nesting grounds:
+**FIRST:** Check if the skill exists in your available skills list (from system-reminder).
+
+**THEN:** Use **Glob** to hunt down the skill across these nesting grounds:
 
 ```
 **/skills/**/<skill-name>/SKILL.md
@@ -32,7 +72,12 @@ Use **Glob** to hunt down the skill across these nesting grounds:
 
 *Pro tip:* Duck-efficient search uses `**/skills/**/` to find ALL skills, then filter by name!
 
-**If the skill doesn't exist:** Quack sadly and suggest similar skills using Glob to list all available skills.
+**If the skill doesn't exist locally but IS in your available skills list:**
+- Explain that you know the skill exists but don't have local access to read it
+- Provide what you know about it from the skill description
+- Suggest they install it locally if needed
+
+**If the skill doesn't exist at all:** Quack sadly and suggest similar skills from the available list.
 
 ### Step 2: Read and Analyze (Pond Investigation)
 
